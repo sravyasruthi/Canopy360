@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}All Trees{% endblock %}
+
+{% macro sort_link(col, label) %}
+  {% set new_order = 'desc' if (sort == col and order == 'asc') else 'asc' %}
+  <a href="{{ url_for('trees.all_trees', q=q, health=health, sort=col, order=new_order) }}">
+    {{ label }}
+    {% if sort == col %}<i class="fa-solid fa-arrow-{{ 'up' if order == 'asc' else 'down' }}"></i>{% endif %}
+  </a>
+{% endmacro %}
+
+{% block content %}
+<div class="page-head">
+  <h1>All Trees</h1>
+  <p>{{ pagination.total }} tree{{ '' if pagination.total == 1 else 's' }} found.</p>
+</div>
+
+<div class="card">
+  <div class="toolbar">
+    <form method="GET" action="{{ url_for('trees.all_trees') }}">
+      <input type="text" name="q" value="{{ q }}" placeholder="Search name, species or location">
+      <select name="health">
+        <option value="">All health statuses</option>
+        {% for option in health_options %}
+          <option value="{{ option }}" {{ 'selected' if health == option }}>{{ option }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit" class="btn btn-sm"><i class="fa-solid fa-magnifying-glass"></i> Search</button>
+      {% if q or health %}
+        <a class="btn btn-sm btn-outline" href="{{ url_for('trees.all_trees') }}">Clear</a>
+      {% endif %}
+    </form>
+    <a class="btn" href="{{ url_for('trees.add_tree') }}"><i class="fa-solid fa-plus"></i> Add New Tree</a>
+  </div>
+
+  {% if trees %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Photo</th>
+          <th>{{ sort_link('tree_name', 'Tree Name') }}</th>
+          <th>{{ sort_link('location', 'Location') }}</th>
+          <th>{{ sort_link('health_status', 'Health') }}</th>
+          <th>{{ sort_link('last_watered', 'Last Watered') }}</th>
+          <th>{{ sort_link('planting_date', 'Planting Date') }}</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for t in trees %}
+        <tr>
+          <td>
+            {% if t.photo %}
+              <img class="thumb-img" src="{{ url_for('static', filename='uploads/' ~ t.photo) }}" alt="{{ t.tree_name }}">
+            {% else %}
+              <span class="thumb-ph">🌳</span>
+            {% endif %}
+          </td>
+          <td><strong>{{ t.tree_name }}</strong><br><small class="muted">{{ t.species }}</small></td>
+          <td>{{ t.location }}</td>
+          <td><span class="badge {{ health_class.get(t.health_status, 'info') }}">{{ t.health_status }}</span></td>
+          <td>{{ t.last_watered.strftime('%d %b %Y') if t.last_watered else '-' }}</td>
+          <td>{{ t.planting_date.strftime('%d %b %Y') if t.planting_date else '-' }}</td>
+          <td>
+            <div class="actions">
+              <a class="btn btn-sm btn-outline" href="{{ url_for('trees.view_tree', tree_id=t.id) }}">View</a>
+              <a class="btn btn-sm btn-outline" href="{{ url_for('trees.edit_tree', tree_id=t.id) }}">Edit</a>
+              <form method="POST" action="{{ url_for('trees.delete_tree', tree_id=t.id) }}"
+                    onsubmit="return confirm('Delete {{ t.tree_name|e }}? This cannot be undone.');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if pagination.pages > 1 %}
+  <div class="pagination">
+    {% if pagination.has_prev %}
+      <a href="{{ url_for('trees.all_trees', q=q, health=health, sort=sort, order=order, page=pagination.prev_num) }}">&laquo; Prev</a>
+    {% else %}<span class="disabled">&laquo; Prev</span>{% endif %}
+
+    {% for p in pagination.iter_pages() %}
+      {% if p is none %}<span class="disabled">…</span>
+      {% elif p == pagination.page %}<span class="current">{{ p }}</span>
+      {% else %}<a href="{{ url_for('trees.all_trees', q=q, health=health, sort=sort, order=order, page=p) }}">{{ p }}</a>
+      {% endif %}
+    {% endfor %}
+
+    {% if pagination.has_next %}
+      <a href="{{ url_for('trees.all_trees', q=q, health=health, sort=sort, order=order, page=pagination.next_num) }}">Next &raquo;</a>
+    {% else %}<span class="disabled">Next &raquo;</span>{% endif %}
+  </div>
+  {% endif %}
+
+  {% else %}
+    <p class="muted">No trees match your search.</p>
+  {% endif %}
+</div>
+{% endblock %}

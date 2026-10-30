@@ -1,0 +1,54 @@
+<form method="POST" action="" class="card" autocomplete="off">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+  <div class="form-grid">
+    <div class="form-group">
+      <label for="name">Name *</label>
+      <input type="text" id="name" name="name" maxlength="100"
+             value="{{ values.get('name', '') }}" required>
+    </div>
+
+    <div class="form-group">
+      <label for="email">Email *</label>
+      <input type="email" id="email" name="email" maxlength="120"
+             value="{{ values.get('email', '') }}" required>
+    </div>
+
+    <div class="form-group">
+      <label for="password">Password {{ '(leave empty to keep the current one)' if edit_mode else '*' }}</label>
+      <input type="password" id="password" name="password" minlength="6"
+             autocomplete="new-password" {{ '' if edit_mode else 'required' }}>
+    </div>
+
+    <div class="form-group">
+      <label for="role">Role</label>
+      <select id="role" name="role" {{ 'disabled' if is_self }}>
+        {% for r in roles %}
+          <option value="{{ r }}" {{ 'selected' if values.get('role', 'User') == r }}>{{ r }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="status">Status</label>
+      <select id="status" name="status" {{ 'disabled' if is_self }}>
+        {% for s in statuses %}
+          <option value="{{ s }}" {{ 'selected' if values.get('status', 'Active') == s }}>{{ s }}</option>
+        {% endfor %}
+      </select>
+      {% if is_self %}
+        <span class="form-hint" style="margin-left:0">You cannot change your own role or status.</span>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <button type="submit" class="btn">
+      <i class="fa-solid fa-{{ 'floppy-disk' if edit_mode else 'user-plus' }}"></i>
+      {{ 'Save Changes' if edit_mode else 'Add User' }}
+    </button>
+    {% if edit_mode %}
+      <a class="btn btn-outline" href="{{ url_for('users.users_page') }}">Cancel</a>
+    {% endif %}
+  </div>
+</form>

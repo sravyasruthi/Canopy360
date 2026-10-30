@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>Welcome back, {{ current_user.name if current_user else 'Admin' }}! 🌳</h1>
+  <p>Here's what's happening with your trees today.</p>
+</div>
+
+<!-- ===== Statistic cards ===== -->
+<div class="stat-grid">
+  <div class="card stat">
+    <div class="stat-icon green"><i class="fa-solid fa-tree"></i></div>
+    <div>
+      <span class="stat-label">Total Trees</span>
+      <strong class="stat-number">{{ total_trees }}</strong>
+      <a href="{{ safe_url('trees.all_trees') }}" class="stat-link">View all trees</a>
+    </div>
+  </div>
+  <div class="card stat">
+    <div class="stat-icon teal"><i class="fa-solid fa-seedling"></i></div>
+    <div>
+      <span class="stat-label">Species</span>
+      <strong class="stat-number">{{ species_count }}</strong>
+      <a href="{{ safe_url('trees.all_trees') }}" class="stat-link">View all species</a>
+    </div>
+  </div>
+  <div class="card stat">
+    <div class="stat-icon blue"><i class="fa-solid fa-droplet"></i></div>
+    <div>
+      <span class="stat-label">Need Watering</span>
+      <strong class="stat-number">{{ need_watering }}</strong>
+      <a href="{{ safe_url('trees.all_trees', health='Needs Water') }}" class="stat-link">View details</a>
+    </div>
+  </div>
+  <div class="card stat">
+    <div class="stat-icon orange"><i class="fa-solid fa-hand-holding-heart"></i></div>
+    <div>
+      <span class="stat-label">Under Care</span>
+      <strong class="stat-number">{{ under_care }}</strong>
+      <span class="stat-link muted">This week</span>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Map | Weather | Carbon ===== -->
+<div class="grid-3">
+  <div class="card">
+    <div class="card-head">
+      <h3>🌳 Tree Locations</h3>
+      <a href="{{ safe_url('trees.map_view') }}" class="btn btn-sm btn-outline">View All</a>
+    </div>
+    {% if map_html %}
+      <iframe class="map-frame" srcdoc="{{ map_html|e }}" title="Tree locations map"></iframe>
+    {% else %}
+      <p class="muted">The map could not be loaded.</p>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h3>Weather &amp; Watering</h3></div>
+    <div class="weather-main">
+      <i class="fa-solid fa-cloud-sun"></i>
+      <div>
+        <strong>{{ weather.temperature|round|int }}°C</strong>
+        <span>{{ weather.description }}</span>
+        <small>{{ weather.city }}, India</small>
+      </div>
+    </div>
+    <div class="weather-stats">
+      <div><i class="fa-solid fa-droplet"></i> Humidity<strong>{{ weather.humidity }}%</strong></div>
+      <div><i class="fa-solid fa-wind"></i> Wind<strong>{{ weather.wind_kmh }} km/h</strong></div>
+      <div><i class="fa-solid fa-cloud-rain"></i> Rain<strong>{{ weather.rain_mm }} mm</strong></div>
+    </div>
+    <div class="reco">
+      <h4><i class="fa-solid fa-circle-info"></i> Watering Recommendation</h4>
+      <p>{{ recommendation.headline }}</p>
+      <p><strong>{{ recommendation.advice }}</strong></p>
+    </div>
+    {% if weather_message %}
+      <p class="notice">{{ weather_message }}</p>
+    {% endif %}
+    <a href="{{ safe_url('weather.weather_page') }}" class="btn btn-sm btn-outline">View Details</a>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h3>Carbon Absorption</h3></div>
+    <div class="carbon-total">
+      <strong>{{ total_carbon }}</strong> <span>kg CO₂ / year (all trees)</span>
+    </div>
+    {% if carbon_chart %}
+      <img class="chart-img" src="{{ carbon_chart }}" alt="Carbon absorption per tree">
+    {% else %}
+      <p class="muted">No data yet. Add trees to see the chart.</p>
+    {% endif %}
+    <p class="small-note">{{ carbon_note }}</p>
+  </div>
+</div>
+
+<!-- ===== Recent trees | Fertilizer ===== -->
+<div class="grid-2">
+  <div class="card">
+    <div class="card-head">
+      <h3>Recently Added Trees</h3>
+      <a href="{{ safe_url('trees.all_trees') }}" class="btn btn-sm btn-outline">View All</a>
+    </div>
+    {% if recent_trees %}
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Tree</th><th>Location</th><th>Health</th><th>Planted</th></tr></thead>
+        <tbody>
+        {% for t in recent_trees %}
+          <tr>
+            <td><span class="tree-thumb">🌳</span> {{ t.tree_name }}</td>
+            <td>{{ t.location }}</td>
+            <td><span class="badge {{ health_class.get(t.health_status, 'info') }}">{{ t.health_status }}</span></td>
+            <td>{{ t.planting_date.strftime('%d %b %Y') if t.planting_date else '-' }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+      <p class="muted">No trees yet.</p>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <h3>Fertilizer Schedule (Upcoming)</h3>
+      <a href="{{ safe_url('fertilizer.scheduler') }}" class="btn btn-sm btn-outline">View All</a>
+    </div>
+    {% if upcoming %}
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Tree</th><th>Fertilizer</th><th>Date</th><th>Status</th></tr></thead>
+        <tbody>
+        {% for f in upcoming %}
+          <tr>
+            <td>{{ f.tree.tree_name }}</td>
+            <td>{{ f.fertilizer_type }}</td>
+            <td>{{ f.application_date.strftime('%d %b %Y') }}</td>
+            <td><span class="badge {{ status_class.get(f.status, 'info') }}">{{ f.status }}</span></td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+      <p class="muted">No fertilizer scheduled.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Edit Tree{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>Edit Tree</h1>
+  <p>Update the details of {{ tree.tree_name }}.</p>
+</div>
+{% include "trees/_form.html" %}
+{% endblock %}

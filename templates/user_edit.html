@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Edit User{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>Edit User</h1>
+  <p>Update the details of {{ user.name }}.</p>
+</div>
+{% include "_user_form.html" %}
+<p style="margin-top:18px"><a href="{{ url_for('users.users_page') }}">&laquo; Back to Users</a></p>
+{% endblock %}

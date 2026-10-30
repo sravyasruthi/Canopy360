@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Users{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>Users</h1>
+  <p>Manage who can sign in to Canopy360.</p>
+</div>
+
+<h3 class="section-title">Add User</h3>
+{% include "_user_form.html" %}
+
+<div class="card" style="margin-top:20px">
+  <div class="card-head"><h3>All Users ({{ users|length }})</h3></div>
+  {% if users %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Created</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+      {% for u in users %}
+        <tr>
+          <td><strong>{{ u.name }}</strong>{% if u.id == my_id %} <span class="badge info">You</span>{% endif %}</td>
+          <td>{{ u.email }}</td>
+          <td><span class="badge {{ 'warning' if u.role == 'Admin' else 'info' }}">{{ u.role }}</span></td>
+          <td><span class="badge {{ 'success' if u.status == 'Active' else 'danger' }}">{{ u.status }}</span></td>
+          <td>{{ u.created_at.strftime('%d %b %Y') if u.created_at else '-' }}</td>
+          <td>
+            <div class="actions">
+              <a class="btn btn-sm btn-outline" href="{{ url_for('users.edit_user', user_id=u.id) }}">Edit</a>
+              {% if u.id != my_id %}
+              <form method="POST" action="{{ url_for('users.delete_user', user_id=u.id) }}"
+                    onsubmit="return confirm('Delete {{ u.name|e }}? This cannot be undone.');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+              </form>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <p class="muted">No users found.</p>
+  {% endif %}
+</div>
+{% endblock %}

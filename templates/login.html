@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Login - Canopy360</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; display: flex;
+      align-items: center; justify-content: center;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: linear-gradient(135deg, #0b3d2e 0%, #1b7a4a 55%, #6fbf73 100%);
+    }
+    .card {
+      width: 100%; max-width: 400px; margin: 20px; padding: 36px 32px;
+      background: rgba(255, 255, 255, 0.97); border-radius: 18px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+    }
+    .logo { text-align: center; margin-bottom: 22px; }
+    .logo .icon { font-size: 44px; }
+    .logo h1 { margin: 6px 0 2px; color: #0b3d2e; font-size: 26px; }
+    .logo p { margin: 0; color: #5b7a68; font-size: 13px; }
+    h2 { margin: 0 0 4px; color: #1f2d27; text-align: center; }
+    .sub { text-align: center; color: #6b7c73; font-size: 14px; margin-bottom: 20px; }
+    label { display: block; font-size: 13px; font-weight: 600; color: #2d4a3b; margin: 14px 0 6px; }
+    input {
+      width: 100%; padding: 12px 14px; border: 1px solid #cfe0d4;
+      border-radius: 10px; font-size: 15px; outline: none;
+    }
+    input:focus { border-color: #1b9a55; box-shadow: 0 0 0 3px rgba(27, 154, 85, 0.15); }
+    button {
+      width: 100%; margin-top: 22px; padding: 13px; border: none;
+      border-radius: 10px; background: #1b9a55; color: #fff;
+      font-size: 16px; font-weight: 600; cursor: pointer;
+    }
+    button:hover { background: #147a43; }
+    .flash { padding: 10px 14px; border-radius: 8px; font-size: 14px; margin-bottom: 12px; }
+    .flash.danger  { background: #fdecea; color: #b3261e; }
+    .flash.success { background: #e6f6ec; color: #17693b; }
+    .flash.warning { background: #fff4e0; color: #8a5a00; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">
+      <div class="icon">🌳</div>
+      <h1>Canopy360</h1>
+      <p>Smart Tree Care &amp; Sustainability Platform</p>
+    </div>
+
+    <h2>Welcome Back</h2>
+    <div class="sub">Login to your account to continue</div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="flash {{ category }}">{{ message }}</div>
+      {% endfor %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('auth.login') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <label for="email">Email</label>
+      <input type="email" id="email" name="email" placeholder="admin@canopy360.com" required>
+
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" placeholder="Enter your password" required>
+
+      <button type="submit">Login</button>
+
+    </form>
+        <p style="text-align:center;margin-top:16px;font-size:14px;color:#6b7c73">
+      Don't have an account? <a href="{{ url_for('auth.register') }}" style="color:#1b9a55;font-weight:600">Register</a>
+    </p>
+
+    <p style="text-align:center;margin-top:16px">
+      <a href="{{ url_for('home.landing') }}" style="color:#1b9a55">&larr; Back to Home</a>
+    </p>
+  </div>
+</body>
+</html>

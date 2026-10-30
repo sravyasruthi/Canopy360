@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Reports{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>Reports</h1>
+  <p>Charts from your tree records, plus downloadable PDF and Excel reports.</p>
+</div>
+
+<div class="card report-actions">
+  <div>
+    <h3 style="margin-bottom:4px">Download Reports</h3>
+    <p class="muted" style="margin:0">Both files use the latest data from the database.</p>
+  </div>
+  <div class="form-actions" style="margin:0">
+    <a class="btn" href="{{ url_for('reports.download_pdf') }}"><i class="fa-solid fa-file-pdf"></i> Generate PDF</a>
+    <a class="btn btn-outline" href="{{ url_for('reports.download_excel') }}"><i class="fa-solid fa-file-excel"></i> Export Excel</a>
+  </div>
+</div>
+
+<div class="stat-grid" style="margin-top:20px">
+  <div class="card stat">
+    <div class="stat-icon green"><i class="fa-solid fa-tree"></i></div>
+    <div><span class="stat-label">Total Trees</span><strong class="stat-number">{{ stats.total_trees }}</strong></div>
+  </div>
+  <div class="card stat">
+    <div class="stat-icon teal"><i class="fa-solid fa-seedling"></i></div>
+    <div><span class="stat-label">Species</span><strong class="stat-number">{{ stats.total_species }}</strong></div>
+  </div>
+  <div class="card stat">
+    <div class="stat-icon blue"><i class="fa-solid fa-droplet"></i></div>
+    <div><span class="stat-label">Needs Water</span><strong class="stat-number">{{ stats.needs_water }}</strong></div>
+  </div>
+  <div class="card stat">
+    <div class="stat-icon orange"><i class="fa-solid fa-leaf"></i></div>
+    <div><span class="stat-label">CO₂ (kg / year)</span><strong class="stat-number">{{ stats.carbon_total }}</strong></div>
+  </div>
+</div>
+
+<div class="two-col">
+  <div class="card">
+    <div class="card-head"><h3>Tree Health</h3></div>
+    {% if health_chart %}<img class="chart-img" src="{{ health_chart }}" alt="Tree health">
+    {% else %}<p class="muted">No data yet.</p>{% endif %}
+  </div>
+  <div class="card">
+    <div class="card-head"><h3>Species Distribution</h3></div>
+    {% if species_chart %}<img class="chart-img" src="{{ species_chart }}" alt="Species distribution">
+    {% else %}<p class="muted">No data yet.</p>{% endif %}
+  </div>
+</div>
+
+<div class="two-col" style="margin-top:20px">
+  <div class="card">
+    <div class="card-head"><h3>Carbon Absorption</h3></div>
+    {% if carbon_chart %}<img class="chart-img" src="{{ carbon_chart }}" alt="Carbon absorption">
+      <p class="small-note">Estimated yearly CO₂ of all trees planted up to each year. A simplified estimate, not an exact measurement.</p>
+    {% else %}<p class="muted">No data yet.</p>{% endif %}
+  </div>
+  <div class="card">
+    <div class="card-head"><h3>Trees Added Per Month</h3></div>
+    {% if monthly_chart %}<img class="chart-img" src="{{ monthly_chart }}" alt="Trees added per month">
+    {% else %}<p class="muted">No data yet.</p>{% endif %}
+  </div>
+</div>
+{% endblock %}

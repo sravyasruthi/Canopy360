@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Fertilizer Scheduler{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>Fertilizer Scheduler</h1>
+  <p>Plan fertilizer applications. The status updates automatically from the date.</p>
+</div>
+
+<!-- ===== Status summary ===== -->
+<div class="stat-grid">
+  <div class="card stat">
+    <div class="stat-icon blue"><i class="fa-solid fa-calendar-days"></i></div>
+    <div><span class="stat-label">Upcoming</span><strong class="stat-number">{{ counts['Upcoming'] }}</strong></div>
+  </div>
+  <div class="card stat">
+    <div class="stat-icon orange"><i class="fa-solid fa-bell"></i></div>
+    <div><span class="stat-label">Due Today</span><strong class="stat-number">{{ counts['Due Today'] }}</strong></div>
+  </div>
+  <div class="card stat">
+    <div class="stat-icon" style="background:#fdecea;color:#b3261e"><i class="fa-solid fa-triangle-exclamation"></i></div>
+    <div><span class="stat-label">Overdue</span><strong class="stat-number">{{ counts['Overdue'] }}</strong></div>
+  </div>
+  <div class="card stat">
+    <div class="stat-icon green"><i class="fa-solid fa-circle-check"></i></div>
+    <div><span class="stat-label">Completed</span><strong class="stat-number">{{ counts['Completed'] }}</strong></div>
+  </div>
+</div>
+
+<!-- ===== Add form ===== -->
+<h3 class="section-title">Add Schedule</h3>
+{% if trees %}
+  {% include "_fertilizer_form.html" %}
+{% else %}
+  <div class="card">
+    <p class="muted" style="margin:0">You need at least one tree first.
+      <a href="{{ safe_url('trees.add_tree') }}">Add a tree</a>.</p>
+  </div>
+{% endif %}
+
+<!-- ===== Schedule list ===== -->
+<div class="card" style="margin-top:20px">
+  <div class="card-head"><h3>Fertilizer Schedule</h3></div>
+
+  <div class="tabs">
+    <a class="{{ 'active' if not selected }}" href="{{ url_for('fertilizer.scheduler') }}">All</a>
+    {% for name in status_filters %}
+      <a class="{{ 'active' if selected == name }}" href="{{ url_for('fertilizer.scheduler', status=name) }}">{{ name }} ({{ counts[name] }})</a>
+    {% endfor %}
+  </div>
+
+  {% if schedules %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Tree</th><th>Fertilizer</th><th>Date</th><th>Quantity</th><th>Status</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+      {% for s in schedules %}
+        <tr>
+          <td><strong>{{ s.tree.tree_name }}</strong></td>
+          <td>{{ s.fertilizer_type }}{% if s.notes %}<br><small class="muted">{{ s.notes }}</small>{% endif %}</td>
+          <td>{{ s.application_date.strftime('%d %b %Y') }}</td>
+          <td>{{ s.quantity or '-' }}</td>
+          <td><span class="badge {{ status_class.get(s.status, 'info') }}">{{ s.status }}</span></td>
+          <td>
+            <div class="actions">
+              {% if not s.completed %}
+              <form method="POST" action="{{ url_for('fertilizer.complete_schedule', schedule_id=s.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-sm"><i class="fa-solid fa-check"></i> Complete</button>
+              </form>
+              {% endif %}
+              <a class="btn btn-sm btn-outline" href="{{ url_for('fertilizer.edit_schedule', schedule_id=s.id) }}">Edit</a>
+              <form method="POST" action="{{ url_for('fertilizer.delete_schedule', schedule_id=s.id) }}"
+                    onsubmit="return confirm('Delete this schedule?');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <p class="muted">Nothing to show here.</p>
+  {% endif %}
+</div>
+{% endblock %}

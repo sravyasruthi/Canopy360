@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}Weather &amp; Watering{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>Weather &amp; Watering</h1>
+  <p>Live conditions and a simple rule-based watering plan for your trees.</p>
+</div>
+
+{% if weather_message %}
+  <p class="notice">{{ weather_message }}</p>
+{% endif %}
+
+<div class="two-col">
+  <div class="card">
+    <div class="card-head">
+      <h3>Current Weather</h3>
+      {% if weather.is_demo %}<span class="badge warning">Demo data</span>
+      {% else %}<span class="badge success">Live</span>{% endif %}
+    </div>
+    <div class="weather-main">
+      <i class="fa-solid fa-cloud-sun"></i>
+      <div>
+        <strong>{{ weather.temperature|round|int }}°C</strong>
+        <span>{{ weather.description }}</span>
+        <small>{{ weather.city }}, India · feels like {{ weather.feels_like|round|int }}°C</small>
+      </div>
+    </div>
+    <div class="weather-stats">
+      <div><i class="fa-solid fa-droplet"></i> Humidity<strong>{{ weather.humidity }}%</strong></div>
+      <div><i class="fa-solid fa-wind"></i> Wind<strong>{{ weather.wind_kmh }} km/h</strong></div>
+      <div><i class="fa-solid fa-cloud-rain"></i> Rain<strong>{{ weather.rain_mm }} mm</strong></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h3>Watering Recommendation</h3></div>
+    <div class="reco">
+      <p>{{ recommendation.headline }}</p>
+      <p><strong>{{ recommendation.advice }}</strong></p>
+    </div>
+    <h4 style="margin-bottom:6px">How this was calculated</h4>
+    <ul class="rule-list">
+      {% for reason in recommendation.reasons %}
+        <li>{{ reason }}</li>
+      {% endfor %}
+    </ul>
+    <p class="small-note">Rules look at temperature, humidity, rainfall, species and tree age. No machine learning is used.</p>
+  </div>
+</div>
+
+<div class="card" style="margin-top:20px">
+  <div class="card-head"><h3>Tree Watering Status</h3></div>
+  {% if rows %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Tree</th><th>Last Watered</th><th>Suggested / Week</th><th>Next Watering</th><th>Status</th><th>Action</th></tr>
+      </thead>
+      <tbody>
+      {% for r in rows %}
+        <tr>
+          <td><strong>{{ r.tree.tree_name }}</strong><br><small class="muted">{{ r.tree.species }}</small></td>
+          <td>{{ r.tree.last_watered.strftime('%d %b %Y') if r.tree.last_watered else 'Never' }}</td>
+          <td>{{ r.times }} times</td>
+          <td>{{ r.next_date.strftime('%d %b %Y') }}</td>
+          <td><span class="badge {{ r.css }}">{{ r.status }}</span></td>
+          <td>
+            <form method="POST" action="{{ url_for('weather.mark_watered', tree_id=r.tree.id) }}" style="margin:0">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="btn btn-sm"><i class="fa-solid fa-droplet"></i> Mark Watered</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <p class="muted">No trees yet. <a href="{{ safe_url('trees.add_tree') }}">Add your first tree</a>.</p>
+  {% endif %}
+</div>
+
+<div class="card" style="margin-top:20px">
+  <div class="card-head"><h3>Recent Watering Records</h3></div>
+  {% if history %}
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Tree</th><th>Date</th><th>Water (litres)</th></tr></thead>
+      <tbody>
+      {% for h in history %}
+        <tr>
+          <td>{{ h.tree.tree_name }}</td>
+          <td>{{ h.watered_on.strftime('%d %b %Y') }}</td>
+          <td>{{ h.amount_litres }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <p class="muted">No watering records yet. Use "Mark Watered" above to create one.</p>
+  {% endif %}
+</div>
+{% endblock %}

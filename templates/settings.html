@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}Settings{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>Settings</h1>
+  <p>Your profile, application details and system status.</p>
+</div>
+
+<div class="two-col">
+  <!-- ===== Admin profile ===== -->
+  <div class="card">
+    <div class="card-head">
+      <h3>{{ 'Admin Profile' if user.role == 'Admin' else 'My Profile' }}</h3>
+      <span class="badge {{ 'warning' if user.role == 'Admin' else 'info' }}">{{ user.role }}</span>
+    </div>
+    <form method="POST" action="{{ url_for('settings.settings_page') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="form" value="profile">
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="name">Name</label>
+          <input type="text" id="name" name="name" maxlength="100" value="{{ values.name }}" required>
+        </div>
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" maxlength="120" value="{{ values.email }}" required>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn"><i class="fa-solid fa-floppy-disk"></i> Update Profile</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- ===== Change password ===== -->
+  <div class="card">
+    <div class="card-head"><h3>Change Password</h3></div>
+    <form method="POST" action="{{ url_for('settings.settings_page') }}" autocomplete="off">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="form" value="password">
+      <div class="form-grid">
+        <div class="form-group full">
+          <label for="current_password">Current Password</label>
+          <input type="password" id="current_password" name="current_password" autocomplete="current-password" required>
+        </div>
+        <div class="form-group">
+          <label for="new_password">New Password</label>
+          <input type="password" id="new_password" name="new_password" minlength="6" autocomplete="new-password" required>
+        </div>
+        <div class="form-group">
+          <label for="confirm_password">Confirm New Password</label>
+          <input type="password" id="confirm_password" name="confirm_password" minlength="6" autocomplete="new-password" required>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn"><i class="fa-solid fa-key"></i> Update Password</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% if show_system %}
+<div class="two-col" style="margin-top:20px">
+  <!-- ===== Application settings ===== -->
+  <div class="card">
+    <div class="card-head"><h3>Application Settings</h3></div>
+    <ul class="kv-list">
+      {% for label, value in app_settings %}
+        <li><span>{{ label }}</span><strong>{{ value }}</strong></li>
+      {% endfor %}
+    </ul>
+    <p class="small-note">These values come from <code>config.py</code> and your <code>.env</code> file.</p>
+  </div>
+
+  <div>
+    <!-- ===== Weather API status ===== -->
+    <div class="card">
+      <div class="card-head">
+        <h3>Weather API Status</h3>
+        <span class="badge {{ api.css }}">{{ api.label }}</span>
+      </div>
+      <ul class="kv-list">
+        <li><span>OpenWeather key</span><strong>{{ 'Set' if api.key_set else 'Not set' }}</strong></li>
+      </ul>
+      <p class="small-note" style="margin-top:10px">{{ api.detail }}</p>
+      <p class="small-note">The weather result is remembered for 10 minutes, so changes to the key can take a moment to show (restart the app after editing <code>.env</code>).</p>
+    </div>
+
+    <!-- ===== Database status ===== -->
+    <div class="card" style="margin-top:20px">
+      <div class="card-head">
+        <h3>Database Status</h3>
+        <span class="badge {{ 'success' if dbinfo.ok else 'danger' }}">{{ 'Connected' if dbinfo.ok else 'Not connected' }}</span>
+      </div>
+      <ul class="kv-list">
+        <li><span>Server</span><strong>{{ dbinfo.host }}:{{ dbinfo.port }}</strong></li>
+        <li><span>Database</span><strong>{{ dbinfo.name }}</strong></li>
+        {% if dbinfo.ok %}
+          <li><span>MySQL version</span><strong>{{ dbinfo.version }}</strong></li>
+          <li><span>Users</span><strong>{{ dbinfo.users }}</strong></li>
+          <li><span>Trees</span><strong>{{ dbinfo.trees }}</strong></li>
+        {% endif %}
+      </ul>
+      {% if not dbinfo.ok %}
+        <p class="notice" style="margin-top:10px">{{ dbinfo.error }}</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

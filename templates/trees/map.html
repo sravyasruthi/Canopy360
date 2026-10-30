@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Map View{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>Map View</h1>
+  <p>
+    {% if current_user and current_user.role == 'Admin' %}All registered trees{% else %}Your registered trees{% endif %}:
+    {{ on_map }} of {{ count }} shown on the map. Click a marker for details.
+  </p>
+</div>
+
+{% if missing %}
+  <p class="notice">
+    {{ missing|length }} tree{{ '' if missing|length == 1 else 's' }} cannot be shown because no GPS position is saved:
+    {% for t in missing %}<a href="{{ url_for('trees.edit_tree', tree_id=t.id) }}">{{ t.tree_name }}</a>{{ ', ' if not loop.last }}{% endfor %}.
+    Open Edit and add the latitude and longitude, or use "Use My Current Location".
+  </p>
+{% endif %}
+
+<div class="card">
+  <div class="legend">
+    <span><i class="dotc" style="background:#38a83a"></i> Healthy</span>
+    <span><i class="dotc" style="background:#f0963c"></i> Needs Care</span>
+    <span><i class="dotc" style="background:#38a9d8"></i> Needs Water</span>
+    <span><i class="dotc" style="background:#d33d2a"></i> Critical</span>
+  </div>
+  {% if map_html %}
+    <iframe class="map-frame tall" srcdoc="{{ map_html|e }}" title="Tree locations map"></iframe>
+  {% else %}
+    <p class="muted">The map is not available right now.</p>
+  {% endif %}
+</div>
+{% endblock %}

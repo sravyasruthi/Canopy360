@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Dashboard{% endblock %} - Canopy360</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+{% set ep = request.endpoint or '' %}
+<div class="app">
+
+  <!-- ===== Sidebar ===== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <i class="fa-solid fa-tree brand-icon"></i>
+      <div>
+        <strong>Canopy360</strong>
+        <small>Smart Tree Care &amp; Sustainability Platform</small>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <a class="nav-link {{ 'active' if ep.startswith('dashboard') }}" href="{{ safe_url('dashboard.index') }}">
+        <i class="fa-solid fa-gauge-high"></i> Dashboard
+      </a>
+
+      {% set tree_section = ep in ['trees.add_tree', 'trees.all_trees', 'trees.view_tree', 'trees.edit_tree'] %}
+      <button type="button" class="nav-link nav-toggle {{ 'active' if tree_section }}" data-submenu="treeMenu">
+        <i class="fa-solid fa-tree"></i> Tree Management
+        <i class="fa-solid fa-chevron-down caret"></i>
+      </button>
+      <div class="submenu {{ 'open' if tree_section }}" id="treeMenu">
+        <a class="sub-link {{ 'active' if ep == 'trees.add_tree' }}" href="{{ safe_url('trees.add_tree') }}">
+          <i class="fa-solid fa-plus"></i> Add New Tree</a>
+        <a class="sub-link {{ 'active' if ep in ['trees.all_trees', 'trees.view_tree', 'trees.edit_tree'] }}" href="{{ safe_url('trees.all_trees') }}">
+          <i class="fa-solid fa-list"></i> All Trees</a>
+      </div>
+
+      <a class="nav-link {{ 'active' if ep == 'trees.map_view' }}" href="{{ safe_url('trees.map_view') }}">
+        <i class="fa-solid fa-location-dot"></i> Map View
+      </a>
+      <a class="nav-link {{ 'active' if ep.startswith('weather') }}" href="{{ safe_url('weather.weather_page') }}">
+        <i class="fa-solid fa-cloud-sun-rain"></i> Weather &amp; Watering
+      </a>
+      <a class="nav-link {{ 'active' if ep.startswith('carbon') }}" href="{{ safe_url('carbon.calculator') }}">
+        <i class="fa-solid fa-leaf"></i> Carbon Calculator
+      </a>
+      <a class="nav-link {{ 'active' if ep.startswith('fertilizer') }}" href="{{ safe_url('fertilizer.scheduler') }}">
+        <i class="fa-solid fa-seedling"></i> Fertilizer Scheduler
+      </a>
+      <a class="nav-link {{ 'active' if ep.startswith('reports') }}" href="{{ safe_url('reports.reports_page') }}">
+        <i class="fa-solid fa-file-lines"></i> Reports
+      </a>
+      <a class="nav-link {{ 'active' if ep.startswith('users') }}" href="{{ safe_url('users.users_page') }}">
+        <i class="fa-solid fa-users"></i> Users
+      </a>
+      <a class="nav-link {{ 'active' if ep.startswith('settings') }}" href="{{ safe_url('settings.settings_page') }}">
+        <i class="fa-solid fa-gear"></i> Settings
+      </a>
+      <a class="nav-link" href="{{ safe_url('auth.logout') }}">
+        <i class="fa-solid fa-right-from-bracket"></i> Logout
+      </a>
+    </nav>
+  </aside>
+
+  <div class="overlay" id="overlay"></div>
+
+  <!-- ===== Main area ===== -->
+  <div class="main">
+    <header class="topbar">
+      <button type="button" class="icon-btn" id="menuBtn" aria-label="Menu">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+
+      {% if header_weather %}
+      <div class="top-weather">
+        <i class="fa-solid fa-cloud-sun"></i>
+        <div>
+          <strong>{{ header_weather.temperature|round|int }}°C</strong>
+          <span>{{ header_weather.description }}</span>
+        </div>
+        <small>{{ header_weather.city }}, India{% if header_weather.is_demo %} · demo{% endif %}</small>
+      </div>
+      {% endif %}
+
+      <div class="top-right">
+        <button type="button" class="icon-btn bell" aria-label="Notifications">
+          <i class="fa-regular fa-bell"></i><span class="dot"></span>
+        </button>
+
+        <div class="profile" id="profile">
+          <button type="button" class="profile-btn" id="profileBtn">
+            <span class="avatar"><i class="fa-solid fa-user"></i></span>
+            <span class="profile-text">
+              <strong>{{ current_user.name if current_user else 'Admin' }}</strong>
+              <small>{{ current_user.email if current_user else '' }}</small>
+            </span>
+            <i class="fa-solid fa-chevron-down"></i>
+          </button>
+          <div class="dropdown" id="profileMenu">
+            <a href="{{ safe_url('settings.settings_page') }}"><i class="fa-solid fa-gear"></i> Settings</a>
+            <a href="{{ safe_url('auth.logout') }}"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="content">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+          <div class="flash {{ category }}">
+            <span>{{ message }}</span>
+            <button type="button" class="flash-close" aria-label="Close">&times;</button>
+          </div>
+        {% endfor %}
+      {% endwith %}
+
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

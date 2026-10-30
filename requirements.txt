@@ -1,0 +1,12 @@
+   Flask
+   Flask-SQLAlchemy
+   Flask-WTF
+   PyMySQL
+   cryptography
+   python-dotenv
+   requests
+   openpyxl
+   reportlab
+   Pillow
+   matplotlib
+   folium

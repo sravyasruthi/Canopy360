@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Canopy360 - Smart Tree Care Platform</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+</head>
+<body>
+
+<!-- ===== Navbar ===== -->
+<header class="nav-bar" id="navBar">
+  <a class="logo" href="#home">
+    <i class="fa-solid fa-tree"></i>
+    <span><strong>Canopy360</strong><small>Smart Tree Care Platform</small></span>
+  </a>
+  <nav class="nav-links">
+    <a href="#home">Home</a>
+    <a href="#features">Features</a>
+    <a href="#about">About</a>
+    <a href="#contact">Contact</a>
+  </nav>
+  {% if logged_in %}
+    <a class="nav-btn" href="{{ url_for('dashboard.index') }}">Dashboard</a>
+  {% else %}
+     <a class="nav-btn" href="{{ url_for('auth.login') }}">Login</a>
+     <a class="nav-btn" href="{{ url_for('auth.register') }}">Register</a>
+  {% endif %}
+</header>
+
+<!-- ===== Hero with tree background ===== -->
+<section class="hero has-photo" id="home">
+  <div class="hero-text">
+    <h1>Understand Your Trees.<br><span>Care for a Greener Future.</span></h1>
+    <p>Register your trees, record their location, monitor their health, calculate
+       their carbon benefits, plan watering and fertilizer, and generate complete
+       tree reports, all in one place.</p>
+    <div class="hero-buttons">
+      {% if logged_in %}
+        <a class="btn-main" href="{{ url_for('dashboard.index') }}">Go to Dashboard</a>
+      {% else %}
+        <a class="btn-main" href="{{ url_for('auth.register') }}">Get Started</a>
+      {% endif %}
+      <a class="btn-ghost" href="#features">Explore Features</a>
+    </div>
+  </div>
+
+  <!-- Drawn tree (SVG). Hidden automatically if you switch to a real photo. -->
+  <div class="hero-art" aria-hidden="true">
+    <svg viewBox="0 0 500 560" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="glow" cx="50%" cy="40%" r="60%">
+          <stop offset="0" stop-color="#fff6b0" stop-opacity="0.55"/>
+          <stop offset="1" stop-color="#fff6b0" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="trunk" x1="0" x2="1">
+          <stop offset="0" stop-color="#4a2f1b"/>
+          <stop offset="0.5" stop-color="#7a5232"/>
+          <stop offset="1" stop-color="#3b2415"/>
+        </linearGradient>
+        <radialGradient id="leafA" cx="40%" cy="35%" r="70%">
+          <stop offset="0" stop-color="#8be26f"/>
+          <stop offset="1" stop-color="#24913f"/>
+        </radialGradient>
+        <radialGradient id="leafB" cx="40%" cy="35%" r="70%">
+          <stop offset="0" stop-color="#52c25d"/>
+          <stop offset="1" stop-color="#136b30"/>
+        </radialGradient>
+      </defs>
+
+      <circle cx="250" cy="230" r="235" fill="url(#glow)"/>
+      <path d="M40 520 Q250 460 460 520 L460 560 L40 560 Z" fill="#0f5a36"/>
+      <path d="M90 540 Q250 495 410 540 L410 560 L90 560 Z" fill="#0b4a2d"/>
+
+      <!-- trunk and branches -->
+      <path d="M228 525 C236 450 236 385 218 330 L282 330 C264 385 264 450 272 525 Z" fill="url(#trunk)"/>
+      <path d="M240 410 C205 385 175 360 150 325" stroke="#5b3a22" stroke-width="13" fill="none" stroke-linecap="round"/>
+      <path d="M262 400 C300 380 330 355 355 320" stroke="#5b3a22" stroke-width="13" fill="none" stroke-linecap="round"/>
+      <path d="M250 360 C250 320 250 290 250 250" stroke="#5b3a22" stroke-width="16" fill="none" stroke-linecap="round"/>
+
+      <!-- canopy -->
+      <g class="sway">
+        <circle cx="120" cy="305" r="62" fill="url(#leafB)"/>
+        <circle cx="380" cy="305" r="62" fill="url(#leafB)"/>
+        <circle cx="170" cy="235" r="82" fill="url(#leafA)"/>
+        <circle cx="330" cy="235" r="82" fill="url(#leafA)"/>
+        <circle cx="250" cy="270" r="92" fill="url(#leafB)"/>
+        <circle cx="205" cy="135" r="68" fill="url(#leafA)"/>
+        <circle cx="295" cy="135" r="68" fill="url(#leafA)"/>
+        <circle cx="250" cy="175" r="98" fill="url(#leafA)"/>
+        <circle cx="215" cy="150" r="26" fill="#b6f29a" opacity="0.35"/>
+        <circle cx="300" cy="200" r="22" fill="#b6f29a" opacity="0.3"/>
+        <circle cx="160" cy="250" r="20" fill="#b6f29a" opacity="0.3"/>
+        <circle cx="345" cy="270" r="18" fill="#0f5a2e" opacity="0.25"/>
+        <circle cx="200" cy="300" r="22" fill="#0f5a2e" opacity="0.25"/>
+      </g>
+    </svg>
+  </div>
+
+  <!-- quick feature icons (like the reference design) -->
+  <div class="icon-strip">
+    <div><i class="fa-solid fa-tree"></i>Tree Profile</div>
+    <div><i class="fa-solid fa-location-dot"></i>GPS Location</div>
+    <div><i class="fa-solid fa-cloud-sun-rain"></i>Weather</div>
+    <div><i class="fa-solid fa-leaf"></i>Carbon</div>
+    <div><i class="fa-solid fa-droplet"></i>Watering</div>
+    <div><i class="fa-solid fa-seedling"></i>Fertilizer</div>
+    <div><i class="fa-solid fa-file-lines"></i>Reports</div>
+  </div>
+</section>
+
+<!-- ===== Features ===== -->
+<section class="section" id="features">
+  <div class="section-head">
+    <h2>Everything you need to care for your trees</h2>
+    <p>Simple tools that turn tree records into useful decisions.</p>
+  </div>
+  <div class="feature-grid">
+    <div class="feature"><i class="fa-solid fa-tree"></i><h3>Tree Registration</h3><p>Add each tree with its species, age, height, diameter, health and a photo.</p></div>
+    <div class="feature"><i class="fa-solid fa-location-dot"></i><h3>GPS &amp; Map View</h3><p>Save exact coordinates and see every tree on an interactive map.</p></div>
+    <div class="feature"><i class="fa-solid fa-cloud-sun"></i><h3>Live Weather</h3><p>Current temperature, humidity, wind and rainfall for your city.</p></div>
+    <div class="feature"><i class="fa-solid fa-droplet"></i><h3>Smart Watering</h3><p>Rule-based advice that adjusts to the weather, species and tree age.</p></div>
+    <div class="feature"><i class="fa-solid fa-leaf"></i><h3>Carbon Calculator</h3><p>Estimate how much CO₂ each tree absorbs, with simple growth charts.</p></div>
+    <div class="feature"><i class="fa-solid fa-seedling"></i><h3>Fertilizer Scheduler</h3><p>Plan applications and see what is upcoming, due today or overdue.</p></div>
+    <div class="feature"><i class="fa-solid fa-file-lines"></i><h3>PDF &amp; Excel Reports</h3><p>Download a clean report of all your trees whenever you need it.</p></div>
+    <div class="feature"><i class="fa-solid fa-lock"></i><h3>Secure Accounts</h3><p>Every user logs in privately and sees only the trees they registered.</p></div>
+  </div>
+</section>
+
+<!-- ===== About ===== -->
+<section class="section alt" id="about">
+  <div class="about-grid">
+    <div>
+      <h2>About Canopy360</h2>
+      <p>Canopy360 is a Smart Tree Care &amp; Sustainability Platform built as a college
+         project. It helps people keep track of the trees they plant and look after,
+         so that every tree gets the right care at the right time.</p>
+      <p>The platform uses Python and Flask with a MySQL database. Carbon values are
+         simplified estimates for learning, not exact scientific measurements.</p>
+    </div>
+    <ul class="about-list">
+      <li><i class="fa-solid fa-circle-check"></i> Easy to use for anyone</li>
+      <li><i class="fa-solid fa-circle-check"></i> Works with real weather data</li>
+      <li><i class="fa-solid fa-circle-check"></i> Reports you can download and share</li>
+      <li><i class="fa-solid fa-circle-check"></i> Built to support a greener future</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ===== Contact ===== -->
+<section class="section" id="contact">
+  <div class="section-head">
+    <h2>Contact</h2>
+    <p>Questions about the project? Reach the project team</p>
+  </div>
+</section>
+
+<!-- ===== Footer band ===== -->
+<footer class="footer">
+  <h2>Together for a <span>Greener Tomorrow</span></h2>
+  <div class="footer-icons">
+    <span><i class="fa-solid fa-tree"></i> Healthier Trees</span>
+    <span><i class="fa-solid fa-wind"></i> Cleaner Air</span>
+    <span><i class="fa-solid fa-city"></i> Greener Cities</span>
+    <span><i class="fa-solid fa-earth-asia"></i> Sustainable Future</span>
+  </div>
+  <p class="copy">&copy; Canopy360 - Smart Tree Care Platform</p>
+</footer>
+
+<script>
+  // Navbar gets a solid background after scrolling
+  var bar = document.getElementById("navBar");
+  function onScroll() { bar.classList.toggle("solid", window.scrollY > 40); }
+  window.addEventListener("scroll", onScroll);
+  onScroll();
+</script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<form method="POST" action="" class="card">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+  <div class="form-grid">
+    <div class="form-group">
+      <label for="tree_id">Tree *</label>
+      <select id="tree_id" name="tree_id" required>
+        <option value="">-- Choose a tree --</option>
+        {% for t in trees %}
+          <option value="{{ t.id }}" {{ 'selected' if values.get('tree_id')|string == t.id|string }}>{{ t.tree_name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="fertilizer_type">Fertilizer Type *</label>
+      <input type="text" id="fertilizer_type" name="fertilizer_type" list="fertTypes" maxlength="100"
+             value="{{ values.get('fertilizer_type', '') }}" placeholder="Choose or type your own" required>
+      <datalist id="fertTypes">
+        {% for f in fertilizer_types %}<option value="{{ f }}">{% endfor %}
+      </datalist>
+    </div>
+
+    <div class="form-group">
+      <label for="application_date">Application Date *</label>
+      <input type="date" id="application_date" name="application_date"
+             value="{{ values.get('application_date', '') }}" required>
+    </div>
+
+    <div class="form-group">
+      <label for="quantity">Quantity</label>
+      <input type="text" id="quantity" name="quantity" maxlength="50"
+             value="{{ values.get('quantity', '') }}" placeholder="e.g. 2 kg">
+    </div>
+
+    <div class="form-group full">
+      <label for="notes">Notes</label>
+      <input type="text" id="notes" name="notes" maxlength="200"
+             value="{{ values.get('notes', '') }}" placeholder="Optional">
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <button type="submit" class="btn">
+      <i class="fa-solid fa-{{ 'floppy-disk' if edit_mode else 'plus' }}"></i>
+      {{ 'Save Changes' if edit_mode else 'Add Schedule' }}
+    </button>
+    {% if edit_mode %}
+      <a class="btn btn-outline" href="{{ url_for('fertilizer.scheduler') }}">Cancel</a>
+    {% endif %}
+  </div>
+</form>

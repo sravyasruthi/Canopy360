@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Register - Canopy360</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; display: flex;
+      align-items: center; justify-content: center;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: linear-gradient(135deg, #0b3d2e 0%, #1b7a4a 55%, #6fbf73 100%);
+    }
+    .card {
+      width: 100%; max-width: 420px; margin: 20px; padding: 32px;
+      background: rgba(255, 255, 255, 0.97); border-radius: 18px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+    }
+    .logo { text-align: center; margin-bottom: 18px; }
+    .logo .icon { font-size: 40px; }
+    .logo h1 { margin: 4px 0 2px; color: #0b3d2e; font-size: 24px; }
+    .logo p { margin: 0; color: #5b7a68; font-size: 12.5px; }
+    h2 { margin: 0 0 4px; color: #1f2d27; text-align: center; }
+    .sub { text-align: center; color: #6b7c73; font-size: 14px; margin-bottom: 14px; }
+    label { display: block; font-size: 13px; font-weight: 600; color: #2d4a3b; margin: 12px 0 6px; }
+    input {
+      width: 100%; padding: 11px 14px; border: 1px solid #cfe0d4;
+      border-radius: 10px; font-size: 15px; outline: none;
+    }
+    input:focus { border-color: #1b9a55; box-shadow: 0 0 0 3px rgba(27, 154, 85, 0.15); }
+    .hint { font-size: 12px; color: #6b7c73; margin-top: 4px; }
+    button {
+      width: 100%; margin-top: 20px; padding: 13px; border: none;
+      border-radius: 10px; background: #1b9a55; color: #fff;
+      font-size: 16px; font-weight: 600; cursor: pointer;
+    }
+    button:hover { background: #147a43; }
+    .flash { padding: 10px 14px; border-radius: 8px; font-size: 14px; margin-bottom: 10px; }
+    .flash.danger  { background: #fdecea; color: #b3261e; }
+    .flash.success { background: #e6f6ec; color: #17693b; }
+    .flash.warning { background: #fff4e0; color: #8a5a00; }
+    .links { text-align: center; margin-top: 16px; font-size: 14px; color: #6b7c73; }
+    .links a { color: #1b9a55; font-weight: 600; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">
+      <div class="icon">🌳</div>
+      <h1>Canopy360</h1>
+      <p>Smart Tree Care &amp; Sustainability Platform</p>
+    </div>
+
+    <h2>Create Account</h2>
+    <div class="sub">Register to start caring for your trees</div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="flash {{ category }}">{{ message }}</div>
+      {% endfor %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('auth.register') }}" autocomplete="off" id="registerForm">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <label for="name">Full Name</label>
+      <input type="text" id="name" name="name" maxlength="100"
+             value="{{ values.get('name', '') }}" placeholder="Your name" required>
+
+      <label for="email">Email</label>
+      <input type="email" id="email" name="email" maxlength="120"
+             value="{{ values.get('email', '') }}" placeholder="you@example.com" required>
+
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" minlength="6"
+             autocomplete="new-password" placeholder="At least 6 characters" required>
+
+      <label for="confirm_password">Confirm Password</label>
+      <input type="password" id="confirm_password" name="confirm_password" minlength="6"
+             autocomplete="new-password" placeholder="Type the password again" required>
+      <div class="hint" id="matchHint"></div>
+
+      <button type="submit">Register</button>
+    </form>
+
+    <div class="links">
+      Already have an account? <a href="{{ url_for('auth.login') }}">Login</a><br><br>
+      <a href="{{ url_for('home.landing') }}">&larr; Back to Home</a>
+    </div>
+  </div>
+
+  <script>
+    // Quick check that both passwords match (the server checks again)
+    var pw = document.getElementById("password");
+    var confirmPw = document.getElementById("confirm_password");
+    var hint = document.getElementById("matchHint");
+    function checkMatch() {
+      if (!confirmPw.value) { hint.textContent = ""; return; }
+      hint.textContent = pw.value === confirmPw.value ? "Passwords match." : "Passwords do not match yet.";
+    }
+    pw.addEventListener("input", checkMatch);
+    confirmPw.addEventListener("input", checkMatch);
+  </script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}{{ tree.tree_name }}{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>{{ tree.tree_name }}</h1>
+  <p>{{ tree.species }} · {{ tree.location }}</p>
+</div>
+
+<div class="detail-top">
+  <div class="card">
+    {% if tree.photo %}
+      <img class="detail-photo" src="{{ url_for('static', filename='uploads/' ~ tree.photo) }}" alt="{{ tree.tree_name }}">
+    {% else %}
+      <div class="detail-photo detail-photo-ph">🌳<small>No photo uploaded</small></div>
+    {% endif %}
+    <div class="form-actions">
+      <a class="btn btn-sm" href="{{ url_for('trees.edit_tree', tree_id=tree.id) }}"><i class="fa-solid fa-pen"></i> Edit</a>
+      <form method="POST" action="{{ url_for('trees.delete_tree', tree_id=tree.id) }}"
+            onsubmit="return confirm('Delete this tree? This cannot be undone.');" style="margin:0">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-sm btn-danger"><i class="fa-solid fa-trash"></i> Delete</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <h3>Tree Profile</h3>
+      <span class="badge {{ health_class.get(tree.health_status, 'info') }}">{{ tree.health_status }}</span>
+    </div>
+    <div class="info-grid">
+      <div class="info-item"><small>Tree Name</small><strong>{{ tree.tree_name }}</strong></div>
+      <div class="info-item"><small>Species</small><strong>{{ tree.species }}</strong></div>
+      <div class="info-item"><small>Location</small><strong>{{ tree.location }}</strong></div>
+      <div class="info-item"><small>GPS Latitude</small><strong>{{ tree.latitude if tree.latitude is not none else '-' }}</strong></div>
+      <div class="info-item"><small>GPS Longitude</small><strong>{{ tree.longitude if tree.longitude is not none else '-' }}</strong></div>
+      <div class="info-item"><small>Planting Date</small><strong>{{ tree.planting_date.strftime('%d %b %Y') if tree.planting_date else '-' }}{% if tree.age_estimated %} (approx.){% endif %}</strong></div>
+      <div class="info-item"><small>Age</small><strong>{% if tree.tree_age < 1 %}Less than 1 year{% else %}{{ tree.tree_age }} year{{ '' if tree.tree_age == 1 else 's' }}{% endif %}</strong></div>
+      <div class="info-item"><small>Height</small><strong>{{ tree.height_m }} m</strong></div>
+      <div class="info-item"><small>Trunk Diameter</small><strong>{{ tree.diameter_cm }} cm</strong></div>
+      <div class="info-item"><small>Watering Frequency</small><strong>{{ tree.watering_frequency }} times / week</strong></div>
+      <div class="info-item"><small>Last Watered</small><strong>{{ tree.last_watered.strftime('%d %b %Y') if tree.last_watered else '-' }}</strong></div>
+      <div class="info-item"><small>Health Status</small><strong>{{ tree.health_status }}</strong></div>
+    </div>
+    <h4 style="margin:18px 0 6px">Notes</h4>
+    <p class="muted" style="margin:0">{{ tree.notes or 'No notes added.' }}</p>
+  </div>
+</div>
+
+<div class="highlight-grid">
+  <div class="card">
+    <small class="muted">Carbon Absorbed</small>
+    <h2 class="highlight-number">{{ carbon.yearly_co2_kg }} <span>kg CO₂ / year</span></h2>
+    <p class="small-note">{{ carbon_note }}</p>
+  </div>
+  <div class="card">
+    <small class="muted">Watering Status</small>
+    <h2 class="highlight-number"><span class="badge {{ water_class }}">{{ water_text }}</span></h2>
+    <p class="small-note">Suggested: about {{ times }} times this week, based on today's weather.</p>
+  </div>
+  <div class="card">
+    <small class="muted">Next Fertilizer</small>
+    {% if next_fert %}
+      <h2 class="highlight-number">{{ next_fert.fertilizer_type }}</h2>
+      <p class="small-note">{{ next_fert.application_date.strftime('%d %b %Y') }} ·
+        <span class="badge {{ status_class.get(next_fert.status, 'info') }}">{{ next_fert.status }}</span></p>
+    {% else %}
+      <h2 class="highlight-number"><span>Nothing scheduled</span></h2>
+    {% endif %}
+  </div>
+</div>
+
+{% if map_html %}
+<div class="card" style="margin-top:20px">
+  <div class="card-head"><h3>📍 Exact Location</h3></div>
+  <iframe class="map-frame" srcdoc="{{ map_html|e }}" title="Tree location"></iframe>
+</div>
+{% endif %}
+
+<p style="margin-top:18px"><a href="{{ url_for('trees.all_trees') }}">&laquo; Back to All Trees</a></p>
+{% endblock %}

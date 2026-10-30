@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Edit Fertilizer Schedule{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>Edit Fertilizer Schedule</h1>
+  <p>Change the details and save.</p>
+</div>
+{% include "_fertilizer_form.html" %}
+<p style="margin-top:18px"><a href="{{ url_for('fertilizer.scheduler') }}">&laquo; Back to Fertilizer Scheduler</a></p>
+{% endblock %}

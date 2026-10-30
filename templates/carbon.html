@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+{% block title %}Carbon Calculator{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>Carbon Calculator</h1>
+  <p>Estimate how much CO₂ a tree absorbs. You do not need exact measurements. {{ note }}</p>
+</div>
+
+<div class="highlight-grid">
+  <div class="card">
+    <small class="muted">Total CO₂ Absorbed (stored in all trees)</small>
+    <h2 class="highlight-number">{{ total_stored }} <span>kg</span></h2>
+  </div>
+  <div class="card">
+    <small class="muted">Yearly CO₂ (all trees)</small>
+    <h2 class="highlight-number">{{ total_yearly }} <span>kg / year</span></h2>
+  </div>
+  <div class="card">
+    <small class="muted">Monthly CO₂ (all trees)</small>
+    <h2 class="highlight-number">{{ total_monthly }} <span>kg / month</span></h2>
+  </div>
+</div>
+
+<div class="two-col" style="margin-top:20px">
+  <div class="card">
+    <div class="card-head"><h3>Tree Details</h3></div>
+    <form method="POST" action="{{ url_for('carbon.calculator') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="form-grid">
+
+        <div class="form-group full">
+          <label for="tree_id">Choose one of your trees (optional, fills the fields)</label>
+          <select id="tree_id" name="tree_id">
+            <option value="">-- Enter details manually --</option>
+            {% for t in trees %}
+              <option value="{{ t.id }}"
+                      data-age="{{ [t.tree_age, 1]|max }}" data-species="{{ t.species or '' }}"
+                      data-dia="{{ t.diameter_cm }}" data-height="{{ t.height_m }}"
+                      {{ 'selected' if values.get('tree_id')|string == t.id|string }}>{{ t.tree_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="age">Tree Age (years) *</label>
+          <input type="number" id="age" name="age" min="1" max="500" value="{{ values.get('age', '') }}" required>
+        </div>
+
+        <div class="form-group">
+          <label for="species">Species or type (optional)</label>
+          <input type="text" id="species" name="species" maxlength="100"
+                 value="{{ values.get('species', '') }}" placeholder="e.g. Neem, Mango">
+        </div>
+
+        <div class="form-group full">
+          <label for="trunk">How thick is the trunk?</label>
+          <select id="trunk" name="trunk">
+            {% for value, text in trunk_choices %}
+              <option value="{{ value }}" {{ 'selected' if values.get('trunk', 'estimate') == value }}>{{ text }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group full" id="trunkValueBox" style="display:none">
+          <label for="trunk_value" id="trunkValueLabel">Trunk diameter (cm)</label>
+          <input type="number" id="trunk_value" name="trunk_value" step="0.1" min="0.5"
+                 value="{{ values.get('trunk_value', '') }}">
+        </div>
+
+        <div class="form-group full">
+          <label for="height">How tall is the tree?</label>
+          <select id="height" name="height">
+            {% for value, text in height_choices %}
+              <option value="{{ value }}" {{ 'selected' if values.get('height', 'estimate') == value }}>{{ text }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group full" id="heightValueBox" style="display:none">
+          <label for="height_value">Tree height (m)</label>
+          <input type="number" id="height_value" name="height_value" step="0.1" min="0.3"
+                 value="{{ values.get('height_value', '') }}">
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" name="action" value="calculate" class="btn"><i class="fa-solid fa-calculator"></i> Calculate</button>
+        <button type="submit" name="action" value="save" class="btn btn-outline"><i class="fa-solid fa-floppy-disk"></i> Calculate &amp; Save Result</button>
+      </div>
+    </form>
+
+    <div class="formula">
+      <h4>Easy ways to measure (optional)</h4>
+      <ul style="margin:0 0 6px;padding-left:20px;font-size:14px;line-height:1.7">
+        <li><strong>Trunk:</strong> wrap a string or tape once around the trunk at chest height, then measure the string in cm and choose "I measured around the trunk".</li>
+        <li><strong>Height:</strong> compare with a building. One storey is about 3 to 4 m.</li>
+        <li><strong>Not sure?</strong> Leave both on "estimate". The result is less accurate but still useful.</li>
+      </ul>
+    </div>
+
+    <div class="formula">
+      <h4>Calculation Method</h4>
+      <ol>
+        <li>Biomass = 0.0509 × 0.6 (wood density) × diameter² × height</li>
+        <li>Carbon stored = biomass × 0.5</li>
+        <li>CO₂ stored = carbon × 3.67</li>
+        <li>CO₂ per year = CO₂ stored ÷ tree age</li>
+      </ol>
+      <p class="small-note">This is a simplified estimate for educational purposes, not an exact scientific measurement.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h3>Estimated CO₂ Absorbed</h3></div>
+    {% if result %}
+      <div class="result-box">
+        <strong>{{ result.yearly_co2_kg }}</strong> <span>kg / year</span>
+      </div>
+      <div class="weather-stats">
+        <div>Monthly CO₂<strong>{{ result.monthly_co2_kg }} kg</strong></div>
+        <div>Total CO₂ stored<strong>{{ result.total_co2_kg }} kg</strong></div>
+        <div>Carbon stored<strong>{{ result.carbon_kg }} kg</strong></div>
+      </div>
+
+      <ul class="kv-list" style="margin-bottom:10px">
+        <li><span>Trunk diameter used</span><strong>{{ used_d }} cm</strong></li>
+        <li><span>Height used</span><strong>{{ used_h }} m</strong></li>
+      </ul>
+      {% for n in notes %}
+        <p class="notice">{{ n }}</p>
+      {% endfor %}
+
+      {% if growth_chart %}
+        <h4 style="margin:6px 0 0">Carbon absorption over time</h4>
+        <img class="chart-img" src="{{ growth_chart }}" alt="Carbon absorption over time">
+      {% endif %}
+      <p class="small-note">Estimated Carbon Absorption (simplified estimate). Estimated sizes make the result less accurate.</p>
+    {% else %}
+      <p class="muted">Enter the age and click <strong>Calculate</strong>. Trunk and height can stay on "estimate".</p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="two-col" style="margin-top:20px">
+  <div class="card">
+    <div class="card-head"><h3>Top Absorbing Trees</h3></div>
+    {% if all_chart %}
+      <img class="chart-img" src="{{ all_chart }}" alt="CO2 per tree">
+    {% else %}
+      <p class="muted">No trees yet.</p>
+    {% endif %}
+  </div>
+  <div class="card">
+    <div class="card-head"><h3>Saved Results</h3></div>
+    {% if recent %}
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Tree</th><th>Date</th><th>kg CO₂ / year</th></tr></thead>
+        <tbody>
+        {% for r in recent %}
+          <tr>
+            <td>{{ r.tree.tree_name }}</td>
+            <td>{{ r.recorded_on.strftime('%d %b %Y') }}</td>
+            <td>{{ r.co2_kg_per_year }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+      <p class="muted">No saved results yet. Choose a tree and use "Calculate &amp; Save Result".</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  var trunk = document.getElementById("trunk");
+  var height = document.getElementById("height");
+
+  // Show the number box only when the user chooses to type a value
+  function refresh() {
+    var trunkBox = document.getElementById("trunkValueBox");
+    var trunkInput = document.getElementById("trunk_value");
+    var needTrunk = trunk.value === "diameter" || trunk.value === "circumference";
+    trunkBox.style.display = needTrunk ? "block" : "none";
+    trunkInput.required = needTrunk;
+    document.getElementById("trunkValueLabel").textContent =
+      trunk.value === "circumference" ? "Trunk circumference (cm)" : "Trunk diameter (cm)";
+
+    var heightBox = document.getElementById("heightValueBox");
+    var heightInput = document.getElementById("height_value");
+    var needHeight = height.value === "exact";
+    heightBox.style.display = needHeight ? "block" : "none";
+    heightInput.required = needHeight;
+  }
+  trunk.addEventListener("change", refresh);
+  height.addEventListener("change", refresh);
+
+  // Choosing a tree fills in its known details
+  document.getElementById("tree_id").addEventListener("change", function () {
+    var option = this.options[this.selectedIndex];
+    if (!option.value) return;
+    document.getElementById("age").value = option.dataset.age;
+    document.getElementById("species").value = option.dataset.species;
+    trunk.value = "diameter";
+    document.getElementById("trunk_value").value = option.dataset.dia;
+    height.value = "exact";
+    document.getElementById("height_value").value = option.dataset.height;
+    refresh();
+  });
+
+  refresh();
+</script>
+{% endblock %}

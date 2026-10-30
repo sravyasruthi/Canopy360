@@ -1,0 +1,286 @@
+<form method="POST" action="" enctype="multipart/form-data" class="card">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+  <div class="form-grid">
+    <div class="form-group">
+      <label for="tree_name">Tree Name *</label>
+      <input type="text" id="tree_name" name="tree_name" maxlength="100" value="{{ values.get('tree_name', '') }}"
+        placeholder="e.g. Neem Tree" required>
+    </div>
+
+    <div class="form-group">
+      <label for="species">Species (filled automatically from the tree name)</label>
+      <input type="text" id="species" name="species" maxlength="100" value="{{ values.get('species', '') }}"
+        placeholder="Auto-filled, or type your own">
+      <span class="form-hint" id="speciesHint" style="margin-left:0">Leave empty and it will be found from the tree
+        name.</span>
+    </div>
+
+    <div class="form-group full">
+      <label for="location">Location *</label>
+      <input type="text" id="location" name="location" maxlength="200" value="{{ values.get('location', '') }}"
+        placeholder="e.g. KBR Park, Hyderabad" required>
+    </div>
+
+    <div class="form-group">
+      <label for="latitude">GPS Latitude</label>
+      <input type="number" id="latitude" name="latitude" step="any" min="-90" max="90"
+        value="{{ values.get('latitude', '') }}" placeholder="17.3850">
+    </div>
+
+    <div class="form-group">
+      <label for="longitude">GPS Longitude</label>
+      <input type="number" id="longitude" name="longitude" step="any" min="-180" max="180"
+        value="{{ values.get('longitude', '') }}" placeholder="78.4867">
+    </div>
+
+    <div class="form-group full">
+      <button type="button" class="btn btn-sm btn-outline" id="useLocation">
+        <i class="fa-solid fa-location-crosshairs"></i> Use My Current Location
+      </button>
+      <span class="form-hint">Hyderabad is about 17.3850, 78.4867. Coordinates make the tree appear on the map.</span>
+    </div>
+
+    <div class="form-group full">
+      <label for="age_source">How will you give the tree's age? *</label>
+      <select id="age_source" name="age_source">
+        <option value="date" {{ 'selected' if values.get('age_source', 'date' )=='date' }}>I know the planting date
+        </option>
+        <option value="years" {{ 'selected' if values.get('age_source')=='years' }}>I don't know the date, but I know
+          the approximate age</option>
+        <option value="stage" {{ 'selected' if values.get('age_source')=='stage' }}>I'm not sure, let me choose a rough
+          stage</option>
+      </select>
+      <span class="form-hint" style="margin-left:0">Tip: ask the owner or neighbours, or compare with a tree of known
+        age.</span>
+    </div>
+
+    <div class="form-group" id="dateBox">
+      <label for="planting_date">Planting Date *</label>
+      <input type="date" id="planting_date" name="planting_date" value="{{ values.get('planting_date', '') }}">
+    </div>
+
+    <div class="form-group" id="yearsBox" style="display:none">
+      <label for="approx_age">Approximate age (years) *</label>
+      <input type="number" id="approx_age" name="approx_age" min="0" max="500"
+        value="{{ values.get('approx_age', '') }}">
+    </div>
+
+    <div class="form-group" id="stageBox" style="display:none">
+      <label for="age_stage">Rough stage *</label>
+      <select id="age_stage" name="age_stage">
+        <option value="">-- Choose --</option>
+        {% for key, label, years in age_stages %}
+        <option value="{{ key }}" data-age="{{ years }}" {{ 'selected' if values.get('age_stage')==key }}>{{ label }}
+        </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="tree_age">Tree age (calculated)</label>
+      <input type="text" id="tree_age" value="" readonly placeholder="Fills in automatically">
+    </div>
+
+    <div class="form-group">
+      <label for="height_m">Height in metres (optional)</label>
+      <input type="number" id="height_m" name="height_m" step="0.1" min="0" value="{{ values.get('height_m', '') }}"
+        placeholder="Leave empty to estimate">
+    </div>
+
+    <div class="form-group">
+      <label for="diameter_cm">Trunk Diameter in cm (optional)</label>
+      <input type="number" id="diameter_cm" name="diameter_cm" step="0.1" min="0"
+        value="{{ values.get('diameter_cm', '') }}" placeholder="Leave empty to estimate">
+    </div>
+
+    <div class="form-group">
+      <label for="health_status">Health Status *</label>
+      <select id="health_status" name="health_status" required>
+        {% for option in health_options %}
+        <option value="{{ option }}" {{ 'selected' if values.get('health_status')==option }}>{{ option }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="watering_frequency">Watering Frequency (times per week) *</label>
+      <input type="number" id="watering_frequency" name="watering_frequency" min="1" max="7"
+        value="{{ values.get('watering_frequency', '') }}" required>
+    </div>
+
+    <div class="form-group">
+      <label for="last_watered">Last Watered Date</label>
+      <input type="date" id="last_watered" name="last_watered" value="{{ values.get('last_watered', '') }}">
+    </div>
+
+    <div class="form-group full">
+      <label for="notes">Notes</label>
+      <textarea id="notes" name="notes" rows="3" maxlength="2000">{{ values.get('notes', '') }}</textarea>
+    </div>
+
+    <div class="form-group full">
+      <label for="photo">Tree Photo (JPG, JPEG, PNG or WEBP, max 5 MB)</label>
+      {% if edit_mode and tree.photo %}
+      <p class="form-hint">Current photo (choose a new file to replace it):</p>
+      <img class="photo-preview" id="preview" src="{{ url_for('static', filename='uploads/' ~ tree.photo) }}"
+        alt="Current photo">
+      {% else %}
+      <img class="photo-preview" id="preview" alt="Photo preview" style="display:none">
+      {% endif %}
+      <input type="file" id="photo" name="photo" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp">
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <button type="submit" class="btn"><i class="fa-solid fa-floppy-disk"></i> {{ 'Save Changes' if edit_mode else 'Add
+      Tree' }}</button>
+    <a class="btn btn-outline" href="{{ url_for('trees.all_trees') }}">Cancel</a>
+  </div>
+</form>
+
+<script>
+  // Show a preview of the chosen photo
+  document.getElementById("photo").addEventListener("change", function () {
+    var preview = document.getElementById("preview");
+    if (this.files && this.files[0]) {
+      preview.src = URL.createObjectURL(this.files[0]);
+      preview.style.display = "block";
+    }
+  });
+
+  // Fill latitude/longitude from the browser's GPS
+  document.getElementById("useLocation").addEventListener("click", function () {
+    if (!navigator.geolocation) {
+      alert("Your browser does not support location.");
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(function (pos) {
+      document.getElementById("latitude").value = pos.coords.latitude.toFixed(6);
+      document.getElementById("longitude").value = pos.coords.longitude.toFixed(6);
+    }, function () {
+      alert("Could not get your location. Please type the coordinates instead.");
+    });
+  });
+</script>
+<script>
+  // Fill the species box automatically while the tree name is typed
+  (function () {
+    var nameInput = document.getElementById("tree_name");
+    var speciesInput = document.getElementById("species");
+    var hint = document.getElementById("speciesHint");
+    var lookupUrl = "{{ url_for('trees.species_lookup') }}";
+    var defaultHint = "Leave empty and it will be found from the tree name.";
+    var autoFilled = false;   // true while the box holds a value we filled in
+    var timer = null;
+
+    function isEmpty(value) {
+      var v = value.trim().toLowerCase();
+      return v === "" || v === "unknown";
+    }
+
+    // If the user types in the species box, never overwrite it again
+    speciesInput.addEventListener("input", function () {
+      autoFilled = false;
+      hint.textContent = defaultHint;
+    });
+
+    function lookup() {
+      var name = nameInput.value.trim();
+      if (!name) return;
+      // Do not touch a species the user typed or that was saved earlier
+      if (!isEmpty(speciesInput.value) && !autoFilled) return;
+
+      fetch(lookupUrl + "?name=" + encodeURIComponent(name), { credentials: "same-origin" })
+        .then(function (response) { return response.json(); })
+        .then(function (data) {
+          if (data.species) {
+            speciesInput.value = data.species;
+            autoFilled = true;
+            hint.textContent = "Filled automatically from the tree name. You can change it.";
+          } else if (autoFilled) {
+            speciesInput.value = "";
+            autoFilled = false;
+            hint.textContent = defaultHint;
+          }
+        })
+        .catch(function () { /* the server will still fill it when saving */ });
+    }
+
+    nameInput.addEventListener("input", function () {
+      clearTimeout(timer);
+      timer = setTimeout(lookup, 350);
+    });
+  })();
+</script>
+<script>
+  // Show the right age inputs and fill the read-only age box
+  (function () {
+    var source = document.getElementById("age_source");
+    var dateInput = document.getElementById("planting_date");
+    var yearsInput = document.getElementById("approx_age");
+    var stageSelect = document.getElementById("age_stage");
+    var out = document.getElementById("tree_age");
+
+
+    // The planting date cannot be in the future
+    dateInput.max = new Date().toISOString().split("T")[0];
+
+    function show(id, visible) {
+      document.getElementById(id).style.display = visible ? "block" : "none";
+    }
+
+    function updateAge() {
+      var mode = source.value;
+
+      if (mode === "years") {
+        var y = parseInt(yearsInput.value, 10);
+        out.value = isNaN(y) ? "" : "About " + y + (y === 1 ? " year" : " years");
+        return;
+      }
+      if (mode === "stage") {
+        var chosen = stageSelect.options[stageSelect.selectedIndex];
+        var a = chosen && chosen.dataset.age;
+        out.value = a ? "About " + a + " years" : "";
+        return;
+      }
+
+      // Planting date known
+      if (!dateInput.value) { out.value = ""; return; }
+      var planted = new Date(dateInput.value + "T00:00:00");
+      var now = new Date();
+      if (planted > now) { out.value = "Planting date is in the future"; return; }
+
+      var years = now.getFullYear() - planted.getFullYear();
+      var monthDiff = now.getMonth() - planted.getMonth();
+      var beforeDay = now.getDate() < planted.getDate();
+      if (monthDiff < 0 || (monthDiff === 0 && beforeDay)) years--;
+
+      if (years >= 1) {
+        out.value = years + (years === 1 ? " year" : " years");
+      } else {
+        var months = (now.getFullYear() - planted.getFullYear()) * 12 + monthDiff - (beforeDay ? 1 : 0);
+        out.value = Math.max(months, 0) + " months (less than 1 year)";
+      }
+    }
+
+    function refresh() {
+      var mode = source.value;
+      show("dateBox", mode === "date");
+      show("yearsBox", mode === "years");
+      show("stageBox", mode === "stage");
+      // Only the visible input is required
+      dateInput.required = (mode === "date");
+      yearsInput.required = (mode === "years");
+      stageSelect.required = (mode === "stage");
+      updateAge();
+    }
+
+    source.addEventListener("change", refresh);
+    dateInput.addEventListener("input", updateAge);
+    dateInput.addEventListener("change", updateAge);
+    yearsInput.addEventListener("input", updateAge);
+    stageSelect.addEventListener("change", updateAge);
+    refresh();   // also sets things up correctly when editing a tree
+  })();
+</script>
